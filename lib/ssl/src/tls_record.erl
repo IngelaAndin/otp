@@ -406,7 +406,7 @@ get_tls_records_aux({3,4} = Version, <<?BYTE(Type),?BYTE(3),?BYTE(3),
                                        Type == ?HANDSHAKE;
                                        Type == ?ALERT;
                                        Type == ?CHANGE_CIPHER_SPEC ->
-    ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'tls_record', [RawTLSRecord]),
+    ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'record', [RawTLSRecord]),
     get_tls_records_aux(Version, Rest, [#ssl_tls{type = Type,
 					version = {3,3}, %% Use legacy version
 					fragment = Data} | Acc], SslOpts);
@@ -416,7 +416,7 @@ get_tls_records_aux({MajVer, MinVer} = Version, <<?BYTE(Type),?BYTE(MajVer),?BYT
                                        Type == ?HANDSHAKE;
                                        Type == ?ALERT;
                                        Type == ?CHANGE_CIPHER_SPEC ->
-    ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'tls_record', [RawTLSRecord]),
+    ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'record', [RawTLSRecord]),
     get_tls_records_aux(Version, Rest, [#ssl_tls{type = Type,
 					version = Version,
 					fragment = Data} | Acc], SslOpts);
@@ -432,7 +432,7 @@ get_tls_records_aux(Versions, <<?BYTE(Type),?BYTE(MajVer),?BYTE(MinVer),
                                           (Type == ?CHANGE_CIPHER_SPEC)) ->
     case is_acceptable_version({MajVer, MinVer}, Versions) of 
         true ->
-            ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'tls_record', [RawTLSRecord]),
+            ssl_logger:debug(SslOpts#ssl_options.log_level, inbound, 'record', [RawTLSRecord]),
             get_tls_records_aux(Versions, Rest, [#ssl_tls{type = Type,
                                                           version = {MajVer, MinVer},
                                                           fragment = Data} | Acc], SslOpts);
