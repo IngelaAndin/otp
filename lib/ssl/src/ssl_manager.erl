@@ -506,7 +506,7 @@ client_register_session(Host, Port, Session, #state{session_cache_client = Cache
 
 do_register_session(Key, #session{time_stamp = TimeStamp} = Session0,
                     Max, Cache, CacheCb, Options, Order0) ->
-    try 
+    try
         case CacheCb:size(Cache) of
             Max ->
                 InternalId = {TimeStamp, erlang:unique_integer([monotonic])},
@@ -514,8 +514,16 @@ do_register_session(Key, #session{time_stamp = TimeStamp} = Session0,
                 {_, OldKey, Order1} = gb_trees:take_smallest(Order0),
                 Order = gb_trees:insert(InternalId, Key, Order1),
                 CacheCb:delete(Cache, OldKey),
+                DSize = CacheCb:size(Cache),
                 CacheCb:update(Cache, Key, Session),
+                logger:log(notice, #{max => Max, size_after_delete => DSize,
+                                     size_after_insert => CacheCb:size(Cache)}),
                 {Cache, Order};
+            N when N > Max ->
+                logger:log(notice, #{larger_than_max => N}),
+                Args0 = proplists:get_value(session_cb_init_args, Options, []),
+                CacheCb:terminate(Cache),
+                {CacheCb:init(Args0), gb_trees:empty()};
             _ ->
                 InternalId = {TimeStamp, erlang:unique_integer([monotonic])},
                 Session = Session0#session{internal_id = InternalId},
@@ -523,12 +531,12 @@ do_register_session(Key, #session{time_stamp = TimeStamp} = Session0,
                 CacheCb:update(Cache, Key, Session),
                 {Cache, Order}
         end
-    catch 
+    catch
 	_:_ ->
             %% Backwards compatibility if size functions is not implemented by callback
-            Args = proplists:get_value(session_cb_init_args, Options, []),
+            Args1 = proplists:get_value(session_cb_init_args, Options, []),
             CacheCb:terminate(Cache),
-	    {CacheCb:init(Args), gb_trees:empty()}
+	    {CacheCb:init(Args1), gb_trees:empty()}
     end.
 
 
