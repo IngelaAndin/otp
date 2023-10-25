@@ -570,9 +570,6 @@ is_supported_sign(rsa_pkcs1_sha512 = SignAlgo, HashSigns) -> %% TLS-1.3 legacy
         lists:member(rsa_pss_rsae_sha512, HashSigns);
 is_supported_sign(SignAlgo, HashSigns) -> %% PRE TLS-1.3 SignAlgo::tuple() TLS-1.3 SignAlgo::atom()
     lists:member(SignAlgo, HashSigns).
-is_supported_sign(SignAlgo, HashSigns) ->
-    lists:any(fun (SignAlgo0) -> lists:member(SignAlgo0, HashSigns) end,
-              [SignAlgo, supported_signalgo(SignAlgo)]).
 
 signature_scheme(rsa_pkcs1_sha256) -> ?RSA_PKCS1_SHA256;
 signature_scheme(rsa_pkcs1_sha384) -> ?RSA_PKCS1_SHA384;
